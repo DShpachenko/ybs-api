@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
+    <data-source source="LOCAL" name="cmsDB@100.0.41.5" uuid="f467a6f0-feb8-41f2-8ead-8c6f1f04ed44">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://100.0.41.5:5432/cmsDB</jdbc-url>
+    </data-source>
+  </component>
+</project>

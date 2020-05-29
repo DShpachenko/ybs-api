@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION_PARSER', 'mysql'),
+    'default' => env('DB_CONNECTION', 'mysql'),
 
     /*
     |--------------------------------------------------------------------------
@@ -90,22 +90,6 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
         ],
-
-        'parser' => [
-            'driver' => 'pgsql',
-            'url' => env('DATABASE_URL_PARSER'),
-            'host' => env('DB_HOST_PARSER', '127.0.0.1'),
-            'port' => env('DB_PORT_PARSER', '5432'),
-            'database' => env('DB_DATABASE_PARSER', 'forge'),
-            'username' => env('DB_USERNAME_PARSER', 'forge'),
-            'password' => env('DB_PASSWORD_PARSER', ''),
-            'charset' => 'utf8',
-            'prefix' => '',
-            'prefix_indexes' => true,
-            'schema' => 'public',
-            'sslmode' => 'prefer',
-        ],
-
     ],
 
     /*
