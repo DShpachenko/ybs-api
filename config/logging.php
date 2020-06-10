@@ -1,6 +1,5 @@
 <?php
 
-use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
 
@@ -37,7 +36,8 @@ return [
     'channels' => [
         'stack' => [
             'driver' => 'stack',
-            'channels' => ['single'],
+            //'channels' => ['daily', 'slack_critical', 'slack_error'],
+            'channels' => ['daily'],
             'ignore_exceptions' => false,
         ],
 
@@ -54,12 +54,20 @@ return [
             'days' => 14,
         ],
 
-        'slack' => [
+        'slack_critical' => [
             'driver' => 'slack',
-            'url' => env('LOG_SLACK_WEBHOOK_URL'),
-            'username' => 'Laravel Log',
-            'emoji' => ':boom:',
+            'url' => env('SLACK_WEB_HOOK_URL'),
+            'username' => 'Critical Logger',
+            'emoji' => ':glitch_crab:',
             'level' => 'critical',
+        ],
+
+        'slack_error' => [
+            'driver' => 'slack',
+            'url' => env('SLACK_WEB_HOOK_URL'),
+            'username' => 'Error Logger',
+            'emoji' => ':crab:',
+            'level' => 'error',
         ],
 
         'papertrail' => [
@@ -89,15 +97,6 @@ return [
         'errorlog' => [
             'driver' => 'errorlog',
             'level' => 'debug',
-        ],
-
-        'null' => [
-            'driver' => 'monolog',
-            'handler' => NullHandler::class,
-        ],
-
-        'emergency' => [
-            'path' => storage_path('logs/laravel.log'),
         ],
     ],
 
