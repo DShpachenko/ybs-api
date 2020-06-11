@@ -2,11 +2,12 @@
 
 namespace App\Modules\Auth\Services;
 
+use App\Exceptions\JsonRpcException;
 use App\Modules\Auth\Exceptions\RestoreException;
-use App\Modules\Auth\Models\SmsCode;
+use App\Modules\Auth\Models\SmsKey;
 use App\Modules\Auth\Models\User;
 use App\Modules\Auth\Repositories\RefreshTokenRepository;
-use App\Modules\Auth\Repositories\SmsCodeRepository;
+use App\Modules\Auth\Repositories\SmsKeyRepository;
 use App\Modules\Auth\Repositories\UserRepository;
 use Illuminate\Support\Facades\DB;
 
@@ -24,9 +25,9 @@ class RestoreService
     public $userRepository;
 
     /**
-     * @var SmsCodeRepository
+     * @var SmsKeyRepository
      */
-    public $smsCodeRepository;
+    public $smsKeyRepository;
 
     /**
      * @var RefreshTokenRepository
@@ -36,13 +37,13 @@ class RestoreService
     /**
      * RestoreService constructor.
      * @param UserRepository $userRepository
-     * @param SmsCodeRepository $smsCodeRepository
+     * @param SmsKeyRepository $smsKeyRepository
      * @param RefreshTokenRepository $tokenRepository
      */
-    public function __construct(UserRepository $userRepository, SmsCodeRepository $smsCodeRepository, RefreshTokenRepository $tokenRepository)
+    public function __construct(UserRepository $userRepository, SmsKeyRepository $smsKeyRepository, RefreshTokenRepository $tokenRepository)
     {
         $this->userRepository = $userRepository;
-        $this->smsCodeRepository = $smsCodeRepository;
+        $this->smsKeyRepository = $smsKeyRepository;
         $this->tokenRepository = $tokenRepository;
     }
 
@@ -58,21 +59,21 @@ class RestoreService
         if ($user = $this->userRepository->findByPhone($params['phone'], [User::STATUS_NEW, User::STATUS_CONFIRMED])) {
             DB::beginTransaction();
 
-            if ($code = $this->smsCodeRepository->createNewSmsCode($user->id, SmsCode::TYPE_PASSWORD_RECOVERY)) {
+            if ($key = $this->smsKeyRepository->createNewSmsKey($user->id, SmsKey::TYPE_PASSWORD_RECOVERY)) {
                 DB::commit();
 
                 return [
                     'status' => 'success',
-                    'code' => $code,
+                    'key' => $key,
                 ];
             }
 
             DB::rollBack();
 
-            throw new RestoreException(__('exception.server_error'));
+            throw new RestoreException(__('exception.server_error'), JsonRpcException::SERVER_ERROR);
         }
 
-        throw new RestoreException(__('response.user_not_found'));
+        throw new RestoreException(__('response.user_not_found'), JsonRpcException::USER_NOT_FOUND);
     }
 
     /**
@@ -85,7 +86,7 @@ class RestoreService
     public function restoreConfirm($params): ? array
     {
         if ($user = $this->userRepository->findByPhone($params['phone'], [User::STATUS_NEW, User::STATUS_CONFIRMED])) {
-            if ($code = $this->smsCodeRepository->checkCode($user->id, $params['code'], SmsCode::TYPE_PASSWORD_RECOVERY)) {
+            if ($key = $this->smsKeyRepository->checkKey($user->id, $params['key'], SmsKey::TYPE_PASSWORD_RECOVERY)) {
                 DB::beginTransaction();
 
                 try {
@@ -93,11 +94,11 @@ class RestoreService
                         case User::STATUS_NEW: {
                             $this->userRepository->confirmUser($user);
                             $this->userRepository->updatePassword($user, $params['password']);
-                            $this->smsCodeRepository->changeUsedStatus($code);
+                            $this->smsKeyRepository->changeUsedStatus($key);
                         }
                         case User::STATUS_CONFIRMED: {
                             $this->userRepository->updatePassword($user, $params['password']);
-                            $this->smsCodeRepository->changeUsedStatus($code);
+                            $this->smsKeyRepository->changeUsedStatus($key);
                             $this->tokenRepository->disableAllUserTokens($user->id);
                         }
                     }
@@ -108,13 +109,13 @@ class RestoreService
                 } catch (\Exception $e) {
                     DB::rollBack();
 
-                    throw new RestoreException(__('exception.server_error'));
+                    throw new RestoreException(__('exception.server_error'), JsonRpcException::SERVER_ERROR);
                 }
             }
 
-            throw new RestoreException(__('response.error_failed_sms_code'));
+            throw new RestoreException(__('response.error_failed_sms_key'), JsonRpcException::FAILED_SMS_KEY);
         }
 
-        throw new RestoreException(__('response.user_not_found'));
+        throw new RestoreException(__('response.user_not_found'), JsonRpcException::USER_NOT_FOUND);
     }
 }

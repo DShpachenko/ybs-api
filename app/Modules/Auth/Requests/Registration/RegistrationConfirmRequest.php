@@ -29,7 +29,7 @@ class RegistrationConfirmRequest extends Validation
                     $query->where('status', User::STATUS_NEW);
                 })
             ],
-            'code' => 'required|min:4|max:4',
+            'key' => 'required|min:4|max:4',
         ];
     }
 
@@ -40,7 +40,7 @@ class RegistrationConfirmRequest extends Validation
     {
         return [
             'phone.required' => __('response.phone_required'),
-            'code.required' => __('response.code_required'),
+            'key.required' => __('response.key_required'),
             'min' => __('response.min'),
             'max' => __('response.max'),
             'exists' => __('response.user_not_found'),

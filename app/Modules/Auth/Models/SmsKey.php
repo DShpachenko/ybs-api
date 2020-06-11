@@ -2,22 +2,22 @@
 
 namespace App\Modules\Auth\Models;
 
-use App\Modules\Auth\Observers\SmsCodeObserver;
+use App\Modules\Auth\Observers\SmsKeyObserver;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Class SmsCode.
+ * Class SmsKey.
  *
  * @package App\Modules\Auth\Models
  * @property int $id
  * @property int $status
  * @property int $type
  * @property int $user_id
- * @property int $code
+ * @property int $key
  * @property int $created_at
  * @property int $updated_at
  */
-class SmsCode extends Model
+class SmsKey extends Model
 {
     /**
      * Время жизни (актуальности) смс кода.
@@ -54,7 +54,7 @@ class SmsCode extends Model
      *
      * @var string
      */
-    protected $table = 'sms_code';
+    protected $table = 'sms_key';
 
     /**
      * The attributes that are mass assignable.
@@ -63,7 +63,7 @@ class SmsCode extends Model
      */
     protected $fillable = [
         'user_id',
-        'code',
+        'key',
         'status',
         'type',
     ];
@@ -74,7 +74,7 @@ class SmsCode extends Model
     public static function boot(): void
     {
         parent::boot();
-        static::observe(new SmsCodeObserver);
+        static::observe(new SmsKeyObserver);
     }
 
     /**

@@ -13,16 +13,16 @@ class CreateSmsCodeTable extends Migration
      */
     public function up(): void
     {
-        Schema::create('sms_code', static function (Blueprint $table) {
+        Schema::create('sms_key', static function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('user_id')->unsigned();
-            $table->string('code');
+            $table->string('key');
             $table->integer('status');
             $table->integer('type');
             $table->timestamps();
         });
 
-        Schema::table('sms_code', static function ($table) {
+        Schema::table('sms_key', static function ($table) {
             $table->foreign('user_id')->references('id')->on('users');
         });
     }
@@ -34,6 +34,6 @@ class CreateSmsCodeTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sms_code');
+        Schema::dropIfExists('sms_key');
     }
 }

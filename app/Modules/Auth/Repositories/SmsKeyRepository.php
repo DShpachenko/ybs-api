@@ -2,21 +2,21 @@
 
 namespace App\Modules\Auth\Repositories;
 
-use App\Modules\Auth\Models\SmsCode;
+use App\Modules\Auth\Models\SmsKey;
 use App\Repositories\Repository;
 
 /**
- * Class SmsCodeRepository
+ * Class SmsKeyRepository
  * @package App\Modules\Auth\Repositories
  */
-class SmsCodeRepository extends Repository
+class SmsKeyRepository extends Repository
 {
     /**
      * @return mixed|string
      */
     public function model()
     {
-        return SmsCode::class;
+        return SmsKey::class;
     }
 
     /**
@@ -25,7 +25,7 @@ class SmsCodeRepository extends Repository
      * @return int
      * @throws \Exception
      */
-    public static function generateCode(): int
+    public static function generateKey(): int
     {
         return random_int(1000, 9999);
     }
@@ -37,13 +37,13 @@ class SmsCodeRepository extends Repository
      * @param $type
      * @return int|null
      */
-    public function createNewSmsCode($userId, $type): ? int
+    public function createNewSmsKey($userId, $type): ? int
     {
         if ($sms = $this->create([
             'type' => $type,
             'user_id' => $userId,
         ])) {
-            return $sms->code;
+            return $sms->key;
         }
 
         return null;
@@ -53,21 +53,21 @@ class SmsCodeRepository extends Repository
      * Проверка смс кода.
      *
      * @param $userId
-     * @param $code
+     * @param $key
      * @param $type
-     * @return SmsCode|null
+     * @return SmsKey|null
      */
-    public function checkCode($userId, $code, $type): ? SmsCode
+    public function checkKey($userId, $key, $type): ? SmsKey
     {
-        $code = $this->model->where('user_id', $userId)
+        $key = $this->model->where('user_id', $userId)
             ->where('type', $type)
-            ->where('status', SmsCode::STATUS_NEW)
-            ->where('code', $code)
+            ->where('status', SmsKey::STATUS_NEW)
+            ->where('key', $key)
             ->orderBy('id', 'DESC')
             ->first();
 
-        if ($code && (time() - $code->created_at->getTimestamp()) <= SmsCode::LIFE_TIME) {
-            return $code;
+        if ($key && (time() - $key->created_at->getTimestamp()) <= SmsKey::LIFE_TIME) {
+            return $key;
         }
 
         return null;
@@ -76,11 +76,11 @@ class SmsCodeRepository extends Repository
     /**
      * Присвоение статуса использованной смс
      *
-     * @param SmsCode $code
+     * @param SmsKey $key
      */
-    public function changeUsedStatus($code): void
+    public function changeUsedStatus($key): void
     {
-        $code->status = SmsCode::STATUS_USED;
-        $code->save();
+        $key->status = SmsKey::STATUS_USED;
+        $key->save();
     }
 }

@@ -2,9 +2,11 @@
 
 namespace App\Modules\Auth\Services;
 
+use App\Exceptions\JsonRpcException;
 use App\Modules\Auth\Exceptions\RegistrationException;
-use App\Modules\Auth\Models\SmsCode;
-use App\Modules\Auth\Repositories\SmsCodeRepository;
+use App\Modules\Auth\Models\SmsKey;
+use App\Modules\Auth\Models\User;
+use App\Modules\Auth\Repositories\SmsKeyRepository;
 use App\Modules\Auth\Repositories\UserRepository;
 use Illuminate\Support\Facades\DB;
 
@@ -22,19 +24,19 @@ class RegistrationService
     public $userRepository;
 
     /**
-     * @var SmsCodeRepository
+     * @var SmsKeyRepository
      */
-    public $smsCodeRepository;
+    public $smsKeyRepository;
 
     /**
      * RegistrationService constructor.
      * @param UserRepository $userRepository
-     * @param SmsCodeRepository $smsCodeRepository
+     * @param SmsKeyRepository $smsKeyRepository
      */
-    public function __construct(UserRepository $userRepository, SmsCodeRepository $smsCodeRepository)
+    public function __construct(UserRepository $userRepository, SmsKeyRepository $smsKeyRepository)
     {
         $this->userRepository = $userRepository;
-        $this->smsCodeRepository = $smsCodeRepository;
+        $this->smsKeyRepository = $smsKeyRepository;
     }
 
     /**
@@ -49,19 +51,19 @@ class RegistrationService
         DB::beginTransaction();
 
         if ($id = $this->userRepository->registrationNewUser($params)) {
-            if ($code = $this->smsCodeRepository->createNewSmsCode($id, SmsCode::TYPE_REGISTRATION)) {
+            if ($key = $this->smsKeyRepository->createNewSmsKey($id, SmsKey::TYPE_REGISTRATION)) {
                 DB::commit();
 
                 return [
                     'status' => 'success',
-                    'code' => $code,
+                    'key' => $key,
                 ];
             }
         }
 
         DB::rollBack();
 
-        throw new RegistrationException(__('exception.server_error'));
+        throw new RegistrationException(__('exception.server_error'), JsonRpcException::SERVER_ERROR);
     }
 
     /**
@@ -73,21 +75,24 @@ class RegistrationService
      */
     public function registrationConfirm($params): ? array
     {
-        $user = $this->userRepository->findByPhone($params['phone']);
+        $user = $this->userRepository->findByPhone($params['phone'], [User::STATUS_NEW]);
 
         DB::beginTransaction();
+        if ($user) {
+            if ($key = $this->smsKeyRepository->checkKey($user->id, $params['key'], SmsKey::TYPE_REGISTRATION)) {
+                $this->userRepository->confirmUser($user);
+                $this->smsKeyRepository->changeUsedStatus($key);
 
-        if ($user && $code = $this->smsCodeRepository->checkCode($user->id, $params['code'], SmsCode::TYPE_REGISTRATION)) {
-            $this->userRepository->confirmUser($user);
-            $this->smsCodeRepository->changeUsedStatus($code);
+                DB::commit();
 
-            DB::commit();
+                return ['status' => 'success'];
+            }
 
-            return ['status' => 'success'];
+            DB::rollBack();
+
+            throw new RegistrationException(__('response.error_failed_sms_key'), JsonRpcException::FAILED_SMS_KEY);
         }
 
-        DB::rollBack();
-
-        throw new RegistrationException(__('response.error_failed_sms_code'));
+        throw new RegistrationException(__('response.user_not_found'), JsonRpcException::USER_NOT_FOUND);
     }
 }

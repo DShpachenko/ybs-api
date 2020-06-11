@@ -2,6 +2,7 @@
 
 namespace App\Modules\Auth\Services;
 
+use App\Exceptions\JsonRpcException;
 use App\Modules\Auth\Exceptions\ValidationException;
 use App\Modules\Auth\Repositories\RefreshTokenRepository;
 use Illuminate\Support\Facades\DB;
@@ -46,6 +47,6 @@ class TokenService
 
         DB::rollBack();
 
-        throw new ValidationException(__('response.token_failed'));
+        throw new ValidationException(__('response.token_failed'), JsonRpcException::TOKEN_FAILED);
     }
 }

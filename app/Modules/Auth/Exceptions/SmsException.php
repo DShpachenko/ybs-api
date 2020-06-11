@@ -13,10 +13,11 @@ class SmsException extends Exception
 {
     /**
      * RestoreException constructor.
-     * @param null $message
+     * @param $message
+     * @param $code
      */
-    public function __construct($message = null)
+    public function __construct($message, $code)
     {
-        parent::__construct(json_encode($message));
+        parent::__construct(json_encode($message), $code);
     }
 }

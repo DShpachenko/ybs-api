@@ -2,6 +2,7 @@
 
 namespace App\Modules\Auth\Services;
 
+use App\Exceptions\JsonRpcException;
 use App\Modules\Auth\Exceptions\AuthException;
 use App\Modules\Auth\Models\User;
 use App\Modules\Auth\Repositories\RefreshTokenRepository;
@@ -49,19 +50,23 @@ class LoginService
     {
         $user = $this->userRepository->findByPhone($params['phone'], [User::STATUS_CONFIRMED]);
 
-        if ($user && Hash::check($params['password'], $user->password)) {
-            DB::beginTransaction();
+        if ($user) {
+            if (Hash::check($params['password'], $user->password)) {
+                DB::beginTransaction();
 
-            if ($token = $this->refreshTokenRepository->add($user->id)) {
-                DB::commit();
+                if ($token = $this->refreshTokenRepository->add($user->id)) {
+                    DB::commit();
 
-                return $token;
+                    return $token;
+                }
+
+                DB::rollBack();
             }
 
-            DB::rollBack();
+            throw new AuthException(__('response.failed_login_pass'), JsonRpcException::INVALID_LOGIN_PASS);
         }
 
-        throw new AuthException(__('response.user_not_found'));
+        throw new AuthException(__('response.user_not_found'), JsonRpcException::USER_NOT_FOUND);
     }
 
     /**

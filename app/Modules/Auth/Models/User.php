@@ -69,8 +69,8 @@ class User extends Model
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function smsCodes(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function smskeys(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(\App\Modules\Auth\Models\SmsCode::class, 'user_id');
+        return $this->hasMany(\App\Modules\Auth\Models\SmsKey::class, 'user_id');
     }
 }

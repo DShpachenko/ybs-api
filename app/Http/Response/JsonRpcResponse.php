@@ -33,13 +33,21 @@ class JsonRpcResponse
      * Error response
      *
      * @param $error
+     * @param $code
      * @return array
      */
-    public static function error($error): array
+    public static function error($error, $code): array
     {
+        $error = isJson($error) ? json_decode($error, true) : $error;
+        $error = is_string($error) ? ['message' => $error] : $error;
+
+        if ($code === 0) {
+            $error = ['message' => __('exception.server_error')];
+        }
+
         return [
             'jsonrpc' => self::JSON_RPC_VERSION,
-            'error' => isJson($error) ? json_decode($error, true) : $error,
+            'error' => array_merge(['code' => $code], $error),
             'id' => null,
         ];
     }

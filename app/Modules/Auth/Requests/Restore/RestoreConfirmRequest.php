@@ -23,7 +23,7 @@ class RestoreConfirmRequest extends Validation
         return [
             'phone' => 'required|min:5|max:30|exists:users,phone',
             'password' => 'required|min:6|max:50',
-            'code' => 'required|min:4|max:4',
+            'key' => 'required|min:4|max:4',
         ];
     }
 
@@ -34,7 +34,7 @@ class RestoreConfirmRequest extends Validation
     {
         return [
             'phone.required' => __('response.phone_required'),
-            'code.required' => __('response.code_required'),
+            'key.required' => __('response.key_required'),
             'password.required' => __('response.password_required'),
             'min' => __('response.min'),
             'max' => __('response.max'),

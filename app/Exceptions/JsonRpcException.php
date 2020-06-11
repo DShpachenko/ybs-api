@@ -22,6 +22,14 @@ class JsonRpcException extends Exception
     public const SERVER_ERROR_MIN = 7;
     public const SERVER_ERROR_MAX = 8;
 
+    public const USER_NOT_FOUND = 9;
+    public const FAILED_SMS_KEY = 10;
+    public const TOKEN_FAILED = 11;
+    public const TOKEN_INCORRECT = 12;
+    public const EMPTY_VALIDATION_RULES = 13;
+    public const EMPTY_VALIDATION_MESSAGES = 14;
+    public const INVALID_LOGIN_PASS = 15;
+
     /** @var mixed|null */
     protected $_data;
 

@@ -2,6 +2,7 @@
 
 namespace App\Modules\Auth\Repositories;
 
+use App\Exceptions\JsonRpcException;
 use App\Modules\Auth\Exceptions\ValidationException;
 use Carbon\Carbon;
 use App\Repositories\Repository;
@@ -112,7 +113,7 @@ class RefreshTokenRepository extends Repository
 
             return json_decode($payloadJson, true);
         } catch (\Exception $e) {
-            throw new ValidationException(__('exception.server_error'));
+            throw new ValidationException(__('exception.server_error'), JsonRpcException::SERVER_ERROR);
         }
     }
 
@@ -125,18 +126,14 @@ class RefreshTokenRepository extends Repository
      */
     public static function tokenValidation($token, $payload): void
     {
-        try {
-            $comparisonToken = self::generateJwt($payload);
+        $comparisonToken = self::generateJwt($payload);
 
-            if ($token === $comparisonToken) {
-                if ($payload['end_point'] < Carbon::now()) {
-                    throw new ValidationException(__('response.token_failed'));
-                }
-            } else {
-                throw new ValidationException(__('response.token_incorrect'));
+        if ($token === $comparisonToken) {
+            if ($payload['end_point'] < Carbon::now()) {
+                throw new ValidationException(__('response.token_failed'), JsonRpcException::TOKEN_FAILED);
             }
-        } catch (\Exception $e) {
-            throw new ValidationException(__('response.token_incorrect'));
+        } else {
+            throw new ValidationException(__('response.token_incorrect'), JsonRpcException::TOKEN_INCORRECT);
         }
     }
 

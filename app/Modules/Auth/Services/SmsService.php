@@ -2,10 +2,11 @@
 
 namespace App\Modules\Auth\Services;
 
+use App\Exceptions\JsonRpcException;
 use App\Modules\Auth\Exceptions\SmsException;
-use App\Modules\Auth\Models\SmsCode;
+use App\Modules\Auth\Models\SmsKey;
 use App\Modules\Auth\Models\User;
-use App\Modules\Auth\Repositories\SmsCodeRepository;
+use App\Modules\Auth\Repositories\SmsKeyRepository;
 use App\Modules\Auth\Repositories\UserRepository;
 use Illuminate\Support\Facades\DB;
 
@@ -18,9 +19,9 @@ use Illuminate\Support\Facades\DB;
 class SmsService
 {
     /**
-     * @var SmsCodeRepository
+     * @var SmsKeyRepository
      */
-    public $smsCodeRepository;
+    public $smsKeyRepository;
 
     /**
      * @var UserRepository
@@ -30,11 +31,11 @@ class SmsService
     /**
      * SmsService constructor.
      * @param UserRepository $userRepository
-     * @param SmsCodeRepository $smsCodeRepository
+     * @param SmsKeyRepository $smsKeyRepository
      */
-    public function __construct(UserRepository $userRepository, SmsCodeRepository $smsCodeRepository)
+    public function __construct(UserRepository $userRepository, SmsKeyRepository $smsKeyRepository)
     {
-        $this->smsCodeRepository = $smsCodeRepository;
+        $this->smsKeyRepository = $smsKeyRepository;
         $this->userRepository = $userRepository;
     }
 
@@ -52,26 +53,26 @@ class SmsService
         if ($user) {
             DB::beginTransaction();
 
-            $type = SmsCode::TYPE_PASSWORD_RECOVERY;
+            $type = SmsKey::TYPE_PASSWORD_RECOVERY;
 
             if ($user->status === User::STATUS_NEW) {
-                $type = SmsCode::TYPE_REGISTRATION;
+                $type = SmsKey::TYPE_REGISTRATION;
             }
 
-            if ($code = $this->smsCodeRepository->createNewSmsCode($user->id, $type)) {
+            if ($key = $this->smsKeyRepository->createNewSmsKey($user->id, $type)) {
                 DB::commit();
 
                 return [
                     'status' => 'success',
-                    'code' => $code,
+                    'key' => $key,
                 ];
             }
 
             DB::rollBack();
 
-            throw new SmsException(__('exception.server_error'));
+            throw new SmsException(__('exception.server_error'), JsonRpcException::SERVER_ERROR);
         }
 
-        throw new SmsException(__('response.user_not_found'));
+        throw new SmsException(__('response.user_not_found'), JsonRpcException::USER_NOT_FOUND);
     }
 }

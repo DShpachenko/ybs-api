@@ -2,6 +2,7 @@
 
 namespace App\Modules\Auth\Requests;
 
+use App\Exceptions\JsonRpcException;
 use App\Modules\Auth\Models\User;
 use Illuminate\Http\Request;
 use App\Modules\Auth\Exceptions\ValidationException;
@@ -71,17 +72,17 @@ class Validation
         $messages = $this->messages();
 
         if (!$rules) {
-            throw new ValidationException(__('errors.no_validation_rules'));
+            throw new ValidationException(__('errors.no_validation_rules'), JsonRpcException::EMPTY_VALIDATION_RULES);
         }
 
         if (!$messages) {
-            throw new ValidationException(__('errors.no_validation_messages'));
+            throw new ValidationException(__('errors.no_validation_messages'), JsonRpcException::EMPTY_VALIDATION_MESSAGES);
         }
 
         $validator = Validator::make($this->params, $rules, $messages);
 
         if ($validator->fails()) {
-            throw new ValidationException($validator->errors()->messages());
+            throw new ValidationException($validator->errors()->messages(), JsonRpcException::INVALID_PARAMS);
         }
 
         $this->afterValidation();
@@ -124,7 +125,7 @@ class Validation
             $tokenRow = $this->refreshTokenRepository->getToken($token, $payLoad['user_id']);
 
             if (!$tokenRow || $tokenRow->user->status !== User::STATUS_CONFIRMED) {
-                throw new ValidationException(__('response.token_failed'));
+                throw new ValidationException(__('response.token_failed'), JsonRpcException::TOKEN_FAILED);
             }
 
             $this->params['user_id'] = $payLoad['user_id'];

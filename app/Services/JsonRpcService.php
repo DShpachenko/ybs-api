@@ -37,9 +37,9 @@ class JsonRpcService
 
             return JsonRpcResponse::success($result, $content['id']);
         } catch (\Exception $e) {
-            return JsonRpcResponse::error($e->getMessage());
+            return JsonRpcResponse::error($e->getMessage(), $e->getCode());
         } catch (\Throwable $e) {
-            return JsonRpcResponse::error(__('exception.server_error'));
+            return JsonRpcResponse::error(__('exception.server_error'), $e->getCode());
         }
     }
 }
