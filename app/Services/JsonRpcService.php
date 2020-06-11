@@ -13,6 +13,8 @@ use App\Exceptions\JsonRpcException;
  */
 class JsonRpcService
 {
+    public const JSON_RPC_VERSION = 2.0;
+
     /**
      * @param Request $request
      * @param Controller $controller
@@ -27,6 +29,10 @@ class JsonRpcService
                 throw new JsonRpcException(JsonRpcException::PARSE_ERROR);
             } else if (!isset($content['method'], $content['params'])) {
                 throw new JsonRpcException(JsonRpcException::INVALID_REQUEST);
+            }
+
+            if ($content['jsonrpc'] !== self::JSON_RPC_VERSION) {
+                throw new JsonRpcException(JsonRpcException::INVALID_JSONRPC_VERSION);
             }
 
             if (!method_exists($controller, $content['method'])) {

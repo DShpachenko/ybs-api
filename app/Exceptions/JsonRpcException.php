@@ -29,6 +29,7 @@ class JsonRpcException extends Exception
     public const EMPTY_VALIDATION_RULES = 13;
     public const EMPTY_VALIDATION_MESSAGES = 14;
     public const INVALID_LOGIN_PASS = 15;
+    public const INVALID_JSONRPC_VERSION = 16;
 
     /** @var mixed|null */
     protected $_data;
@@ -67,6 +68,7 @@ class JsonRpcException extends Exception
             self::INVALID_PARAMS => __('exception.invalid_params'),
             self::INTERNAL_ERROR => __('exception.internal_error'),
             self::SERVER_ERROR => __('exception.server_error'),
+            self::INVALID_JSONRPC_VERSION => __('exception.json_rpc_version'),
         ];
     }
 
