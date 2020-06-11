@@ -13,7 +13,10 @@ use App\Exceptions\JsonRpcException;
  */
 class JsonRpcService
 {
-    public const JSON_RPC_VERSION = 2.0;
+    /**
+     * Версия спецификации.
+     */
+    public const JSON_RPC_VERSION = "2.0";
 
     /**
      * @param Request $request
